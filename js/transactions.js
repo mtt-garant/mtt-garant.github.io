@@ -10,18 +10,31 @@ function formatTimestamp(timestampMilliseconds) {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
-function generateTransactionLink(type, hash) {
+function generateTransactionLink(type, hash, amount) {
+  let url = '';
+  let currency = '';
+
   if (type.startsWith('MTT_')) {
-    return `<a href="https://explorer.mtt.network/tx/${hash}" target="_blank">${hash.slice(0, 4)}...${hash.slice(-4)}</a>`;
+    url = `https://explorer.mtt.network/tx/${hash}`;
   } else if (type.startsWith('BSC_')) {
-    return `<a href="https://bscscan.com/tx/${hash}" target="_blank">${hash.slice(0, 4)}...${hash.slice(-4)}</a>`;
+    url = `https://bscscan.com/tx/${hash}`;
   }
-  return hash; // Если тип не подходит, возвращаем сам хеш
+
+  if (type.endsWith('_USD')) {
+    currency = 'USDT';
+  } else if (type.endsWith('_MTT')) {
+    currency = 'MTT';
+  } else if (type.endsWith('_BNB')) {
+    currency = 'BNB';
+  }
+
+  const shortHash = `${hash.slice(0, 4)}...${hash.slice(-4)}`;
+  return `<a href="${url}" target="_blank">${shortHash}</a> (${amount} ${currency})`;
 }
 
 async function fetchTransactions() {
   try {
-    const response = await fetch('http://95.111.203.22:8090/api/v1/exchange_transactions/list');
+    const response = await fetch('https://95.111.203.22:8443/api/v1/exchange_transactions/list');
     if (!response.ok) {
       throw new Error('Ошибка при получении данных с API');
     }
@@ -32,8 +45,8 @@ async function fetchTransactions() {
     const transactions = data.map(tx => ({
       id: tx.id,
       timestamp: formatTimestamp(tx.timestampMilliseconds),
-      incoming: generateTransactionLink(tx.incoming.type, tx.incoming.hash),
-      outgoing: generateTransactionLink(tx.outgoing.type, tx.outgoing.hash),
+      incoming: generateTransactionLink(tx.incoming.type, tx.incoming.hash, tx.incoming.amount),
+      outgoing: generateTransactionLink(tx.outgoing.type, tx.outgoing.hash, tx.outgoing.amount),
       status: tx.status,
       rate: 'TODO', // Пока нет данных, возвращаем TODO
       message: tx.message || ''

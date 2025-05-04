@@ -1,7 +1,7 @@
 
 // Метод для получения курса 1 MTT за USDT и обратного курса
 function calculateMttForUsdt() {
-  return fetch('http://95.111.203.22:8090/api/v1/rates/sellerMttForUsdt')
+  return fetch('https://95.111.203.22:8443/api/v1/rates/sellerMttForUsdt')
     .then(response => response.json())
     .then(data => {
       // Возвращаем объект с курсами
@@ -20,7 +20,7 @@ function calculateMttForUsdt() {
 }
 
 function calculateMttForBnb() {
-  return fetch('http://95.111.203.22:8090/api/v1/rates/sellerMttForBnb')
+  return fetch('https://95.111.203.22:8443/api/v1/rates/sellerMttForBnb')
     .then(response => response.json())
     .then(data => {
       // Возвращаем объект с курсами
