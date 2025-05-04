@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MTT Garant Exchanger</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="css/style.css" rel="stylesheet" />
+</head>
+<body>
+
+  <div id="navbar-placeholder"></div>
+
+  <div class="container mt-4">
+    <div id="main-content">
+      <h1>Welcome to MTT Garant Exchanger</h1>
+
+      <div class="row mt-4 tight-cols">
+        <!-- USDT Card -->
+        <div class="col-md-3 mb-3">
+          <div class="card price-card">
+            <div class="card-header price-card-header">
+              MTT / USDT Buy
+            </div>
+            <div class="card-body price-card-body">
+              <p id="mtt-usdt-price" class="lead">Loading price...</p>
+              <p id="usdt-mtt-price" class="text-muted">Loading reverse price...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- BNB Card -->
+        <div class="col-md-3 mb-3">
+          <div class="card price-card">
+            <div class="card-header price-card-header">
+              MTT / BNB Buy
+            </div>
+            <div class="card-body price-card-body">
+              <p id="mtt-bnb-price" class="lead">Loading price...</p>
+              <p id="bnb-mtt-price" class="text-muted">Loading reverse price...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transaction Table -->
+      <div class="row mt-5 justify-content-center">
+        <div class="col-lg-10">
+          <h2 class="mb-3">Recent Transactions</h2>
+          <div class="table-responsive">
+            <table class="table table-striped table-bordered align-middle" id="transaction-table">
+              <thead class="table-light">
+                <tr>
+                  <th>Id</th>
+                  <th>Timestamp</th>
+                  <th>Incoming</th>
+                  <th>Outgoing</th>
+                  <th>Status</th>
+                  <th>Rate</th>
+                  <th>Message</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Строки таблицы будут добавляться динамически через JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/load-navbar.js"></script>
+  <script src="js/rate-calculator.js"></script>
+  <script src="js/transactions.js"></script> <!-- Подключаем transactions.js -->
+
+  <script>
+    // Загрузка курсов MTT/USDT
+    calculateMttForUsdt().then(rates => {
+      document.getElementById('mtt-usdt-price').textContent = `1 MTT = ${rates.mttPrice} USDT`;
+      document.getElementById('usdt-mtt-price').textContent = `1 USDT = ${rates.usdtPrice} MTT`;
+    });
+
+    // Загрузка курсов MTT/BNB
+    calculateMttForBnb().then(rates => {
+      document.getElementById('mtt-bnb-price').textContent = `1 MTT = ${rates.mttPrice} BNB`;
+      document.getElementById('bnb-mtt-price').textContent = `1 BNB = ${rates.bnbPrice} MTT`;
+    });
+  </script>
+</body>
+</html>
