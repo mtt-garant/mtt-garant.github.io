@@ -10,9 +10,31 @@ function formatTimestamp(timestampMilliseconds) {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
+function getCurrency(simpleTransactionType) {
+  let currency = '';
+  if (simpleTransactionType.endsWith('_USD')) {
+    currency = 'USDT';
+  } else if (simpleTransactionType.endsWith('_MTT')) {
+    currency = 'MTT';
+  } else if (simpleTransactionType.endsWith('_BNB')) {
+    currency = 'BNB';
+  }
+  return currency;
+}
+
+function getRatePrecision(fromCurrency, toCurrency) {
+  if (fromCurrency === 'MTT' && toCurrency === 'USDT') {
+    return 5;
+  }
+  if (fromCurrency === 'MTT' && toCurrency === 'BNB') {
+    return 8;
+  }
+  return 6; // дефолт
+}
+
 function generateTransactionLink(type, hash, amount) {
   let url = '';
-  let currency = '';
+  let currency = getCurrency(type);
 
   if (type.startsWith('MTT_')) {
     url = `https://explorer.mtt.network/tx/${hash}`;
@@ -20,16 +42,26 @@ function generateTransactionLink(type, hash, amount) {
     url = `https://bscscan.com/tx/${hash}`;
   }
 
-  if (type.endsWith('_USD')) {
-    currency = 'USDT';
-  } else if (type.endsWith('_MTT')) {
-    currency = 'MTT';
-  } else if (type.endsWith('_BNB')) {
-    currency = 'BNB';
-  }
-
   const shortHash = `${hash.slice(0, 4)}...${hash.slice(-4)}`;
   return `<a href="${url}" target="_blank">${shortHash}</a> (${amount} ${currency})`;
+}
+
+function calculateRate(incoming, outgoing) {
+  if (!incoming?.amount || !outgoing?.amount) return 'N/A';
+
+  const fromCurrency = getCurrency(outgoing.type);
+  const toCurrency = getCurrency(incoming.type);
+
+  const precision = getRatePrecision(fromCurrency, toCurrency);
+  const rate = (incoming.amount / outgoing.amount).toFixed(precision);  
+  const rateText = `1 ${fromCurrency} = ${rate} ${toCurrency}`;
+  return rateText;
+}
+
+function getMessageText(message, resolution) {
+  if (!message) return '';
+  if (!resolution) return message;
+  return `${message} (<a href="${resolution}" target="_blank">Resolved</a>)`;
 }
 
 async function fetchTransactions() {
@@ -48,8 +80,8 @@ async function fetchTransactions() {
       incoming: generateTransactionLink(tx.incoming.type, tx.incoming.hash, tx.incoming.amount),
       outgoing: generateTransactionLink(tx.outgoing.type, tx.outgoing.hash, tx.outgoing.amount),
       status: tx.status,
-      rate: 'TODO', // Пока нет данных, возвращаем TODO
-      message: tx.message || ''
+      rate: calculateRate(tx.incoming, tx.outgoing),
+      message: getMessageText(tx.message, tx.resolutionLink)
     }));
 
     return transactions;
@@ -67,12 +99,19 @@ async function populateTransactionTable() {
 
   transactions.forEach(tx => {
     const row = document.createElement('tr');
+    let statusClass = 'bg-warning';
+    if (tx.status === 'OK') {
+      statusClass = 'bg-success';
+    } else if (tx.status === 'ERROR') {
+      statusClass = 'bg-danger';
+    }
+
     row.innerHTML = `
       <td>${tx.id}</td>
       <td>${tx.timestamp}</td>
       <td>${tx.incoming}</td>
       <td>${tx.outgoing}</td>
-      <td><span class="badge bg-success">${tx.status}</span></td>
+      <td><span class="badge ${statusClass}">${tx.status}</span></td>
       <td>${tx.rate}</td>
       <td>${tx.message}</td>
     `;

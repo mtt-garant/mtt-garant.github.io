@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const placeholder = document.getElementById('navbar-placeholder');
   if (placeholder) {
-    fetch('navbar.html')
+    fetch('partials/navbar.html')
       .then(response => response.text())
       .then(html => {
         placeholder.innerHTML = html;
